@@ -1,9 +1,23 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { ChatMessage } from "../types";
 
-// Initialize the client. API_KEY is injected by the environment.
-// Guideline: Use process.env.API_KEY directly.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazy initialization of the client.
+// This prevents the application from crashing immediately on load if the API key is missing.
+let aiInstance: GoogleGenAI | null = null;
+
+const getAiClient = (): GoogleGenAI => {
+    if (!aiInstance) {
+        // Guideline: Use process.env.API_KEY directly.
+        // If it's missing, we let it throw or handle it gracefully here, 
+        // rather than at the top level of the module.
+        const apiKey = process.env.API_KEY;
+        if (!apiKey) {
+             throw new Error("API Key is missing. Please check your environment variables.");
+        }
+        aiInstance = new GoogleGenAI({ apiKey });
+    }
+    return aiInstance;
+};
 
 export const generateDecisionResponse = async (
   currentMessage: string,
@@ -11,16 +25,13 @@ export const generateDecisionResponse = async (
   imageBase64?: string
 ): Promise<string> => {
   try {
-    if (!process.env.API_KEY) {
-        return "System Error: API Key is missing. Please contact the administrator.";
-    }
+    const ai = getAiClient();
 
-    // Select model based on presence of image
+    // Select model based on task
     // gemini-3-flash-preview supports both text and image input.
     const modelName = 'gemini-3-flash-preview';
 
     // Construct the prompt context from history (simplified for single-turn formatted request or short history)
-    // We will build a system instruction via the prompt itself or config if supported.
     const systemPrompt = `You are DecideForMe, a trendy, Gen Z-friendly AI decision assistant. 
     Tone: Fun, concise, premium, helpful, and objective. 
     Goal: Help the user make a decision about outfits, food, travel, or shopping.
@@ -69,15 +80,19 @@ export const generateDecisionResponse = async (
         return response.text || "I'm having trouble thinking right now.";
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini API Error:", error);
+    // Return a friendly error message to the chat instead of crashing
+    if (error.message.includes("API Key is missing")) {
+        return "System Error: API Key configuration is missing.";
+    }
     return "Oops! My brain froze. Please try again later.";
   }
 };
 
 export const generateComparisonData = async (topicA: string, topicB: string): Promise<any> => {
     try {
-        if (!process.env.API_KEY) return null;
+        const ai = getAiClient();
 
         const prompt = `Compare "${topicA}" and "${topicB}" for a user deciding between them. 
         Return ONLY a JSON object with this structure:

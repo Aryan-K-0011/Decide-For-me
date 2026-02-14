@@ -46,6 +46,62 @@
         }
       }
     </script>
+    <!-- Global Error Handler: Displays errors on screen to prevent blank page debugging issues -->
+    <style>
+      #global-error-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #0f172a;
+        color: #f87171;
+        z-index: 9999;
+        padding: 2rem;
+        overflow: auto;
+        font-family: monospace;
+      }
+      #global-error-overlay h2 {
+        color: #fff;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #334155;
+        padding-bottom: 0.5rem;
+      }
+      .error-entry {
+        background: rgba(0,0,0,0.3);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #451a1a;
+      }
+    </style>
+    <script>
+      window.addEventListener('error', function(event) {
+        var overlay = document.getElementById('global-error-overlay');
+        var content = document.getElementById('global-error-content');
+        if (overlay && content) {
+          overlay.style.display = 'block';
+          var div = document.createElement('div');
+          div.className = 'error-entry';
+          div.innerText = 'Runtime Error: ' + event.message + '\nFile: ' + event.filename + ':' + event.lineno;
+          content.appendChild(div);
+        }
+      });
+
+      window.addEventListener('unhandledrejection', function(event) {
+        var overlay = document.getElementById('global-error-overlay');
+        var content = document.getElementById('global-error-content');
+        if (overlay && content) {
+          overlay.style.display = 'block';
+          var div = document.createElement('div');
+          div.className = 'error-entry';
+          div.innerText = 'Promise Rejection: ' + (event.reason ? (event.reason.message || event.reason) : 'Unknown reason');
+          content.appendChild(div);
+        }
+      });
+    </script>
 <script type="importmap">
 {
   "imports": {
@@ -63,6 +119,11 @@
 </script>
 </head>
   <body>
+    <div id="global-error-overlay">
+      <h2>Something went wrong starting the app</h2>
+      <div id="global-error-content"></div>
+      <button onclick="window.location.reload()" style="margin-top:20px; padding:10px 20px; background:#8b5cf6; color:white; border:none; border-radius:8px; cursor:pointer;">Reload Application</button>
+    </div>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
