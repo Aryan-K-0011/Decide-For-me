@@ -2,8 +2,8 @@ import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { ChatMessage } from "../types";
 
 // Initialize the client. API_KEY is injected by the environment.
-// Fallback to empty string to prevent crash during initialization if key is missing.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Guideline: Use process.env.API_KEY directly.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateDecisionResponse = async (
   currentMessage: string,
@@ -26,8 +26,6 @@ export const generateDecisionResponse = async (
     Goal: Help the user make a decision about outfits, food, travel, or shopping.
     Format: Use emojis. Be direct. If comparing, give pros/cons.`;
 
-    const contents = [];
-    
     // Add history context (limited to last 5 turns to save context window and complexity)
     const recentHistory = history.slice(-5);
     let contextStr = recentHistory.map(m => `${m.role === 'user' ? 'User' : 'AI'}: ${m.text}`).join('\n');
