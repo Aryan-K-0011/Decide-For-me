@@ -1,0 +1,7 @@
+{
+  "name": "DecideForMe",
+  "description": "A modern AI-powered decision-making assistant platform for Gen Z.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
