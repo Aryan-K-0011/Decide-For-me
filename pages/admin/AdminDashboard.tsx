@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { Users, MessageCircle, CheckCircle, Activity, FileText } from 'lucide-react';
+import { Users, MessageCircle, CircleCheck, Activity, FileText } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, Cell } from 'recharts';
 import { storageService } from '../../services/storageService';
 
@@ -54,7 +54,7 @@ const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
          {[
            { label: 'Total Users', val: userCount, icon: <Users className="text-blue-400" />, change: 'Real-time' },
-           { label: 'Total Activities', val: logs.length, icon: <CheckCircle className="text-green-400" />, change: 'Real-time' },
+           { label: 'Total Activities', val: logs.length, icon: <CircleCheck className="text-green-400" />, change: 'Real-time' },
            { label: 'Active Sessions', val: '4', icon: <MessageCircle className="text-pink-400" />, change: '+5%' },
            { label: 'Engagement', val: '68%', icon: <Activity className="text-orange-400" />, change: '+2%' },
          ].map((stat, i) => (
@@ -160,7 +160,7 @@ const AdminDashboard: React.FC = () => {
                          <td className="px-4 py-3 text-gray-500">{log.time}</td>
                          <td className="px-4 py-3">
                             <span className={`flex items-center gap-1 ${log.status === 'Success' ? 'text-green-400' : 'text-red-400'}`}>
-                               {log.status === 'Success' ? <CheckCircle size={14} /> : <Activity size={14} />}
+                               {log.status === 'Success' ? <CircleCheck size={14} /> : <Activity size={14} />}
                                {log.status}
                             </span>
                          </td>

@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
-import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
+import { TriangleAlert, RefreshCcw, Home } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -10,7 +10,6 @@ interface State {
   error: Error | null;
 }
 
-// Fix: Use Component explicitly and ensure generic types are passed correctly
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
@@ -31,7 +30,7 @@ class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen bg-dark flex flex-col items-center justify-center p-4 text-center">
           <div className="glass-panel p-8 rounded-3xl border border-red-500/30 max-w-md w-full animate-fade-in-up">
             <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertTriangle className="text-red-400 w-8 h-8" />
+              <TriangleAlert className="text-red-400 w-8 h-8" />
             </div>
             <h1 className="text-2xl font-bold text-white mb-2">Oops! Something went wrong.</h1>
             <p className="text-gray-400 mb-6 text-sm">

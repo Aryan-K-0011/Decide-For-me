@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { MessageSquare, AlertTriangle, Check, Trash2 } from 'lucide-react';
+import { MessageSquare, TriangleAlert, Check, Trash2 } from 'lucide-react';
 import { storageService } from '../../services/storageService';
 
 const FeedbackPage: React.FC = () => {
@@ -40,7 +40,7 @@ const FeedbackPage: React.FC = () => {
                 <div key={item.id} className="glass-panel p-6 rounded-2xl border border-white/5 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
                    <div className="flex items-start gap-4">
                       <div className={`mt-1 p-3 rounded-xl ${item.type === 'Bug Report' ? 'bg-red-500/10 text-red-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                         {item.type === 'Bug Report' ? <AlertTriangle size={20} /> : <MessageSquare size={20} />}
+                         {item.type === 'Bug Report' ? <TriangleAlert size={20} /> : <MessageSquare size={20} />}
                       </div>
                       <div>
                          <h3 className="font-bold text-white text-lg">{item.type} <span className="text-xs font-normal text-gray-500 ml-2">{item.date}</span></h3>

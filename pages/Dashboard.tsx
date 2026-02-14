@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SavedDecision, User, AppRoutes, QuizResult } from '../types';
-import { Bookmark, User as UserIcon, Settings, Clock, ArrowRight, Trash2, MessageCircle, Compass, Sparkles, PieChart, Star } from 'lucide-react';
+import { Bookmark, User as UserIcon, Settings, Clock, ArrowRight, Trash2, MessageCircle, Compass, Sparkles, ChartPie, Star } from 'lucide-react';
 import { userService } from '../services/userService';
 import { Link } from 'react-router-dom';
 
@@ -209,7 +209,7 @@ const Dashboard: React.FC = () => {
             {/* Spin Wheel History */}
             <div className="glass-panel p-6 rounded-3xl">
                 <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <PieChart className="text-green-400" size={18} /> Spin History
+                    <ChartPie className="text-green-400" size={18} /> Spin History
                 </h3>
                 {spinHistory.length === 0 ? (
                     <div className="text-center py-4">

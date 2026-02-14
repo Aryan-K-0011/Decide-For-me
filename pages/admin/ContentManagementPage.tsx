@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { Edit2, Trash2, Plus, Layers, HelpCircle, Save, X } from 'lucide-react';
+import { Pen, Trash2, Plus, Layers, CircleHelp, Save, X } from 'lucide-react';
 import { storageService } from '../../services/storageService';
 
 const ContentManagementPage: React.FC = () => {
@@ -84,7 +84,7 @@ const ContentManagementPage: React.FC = () => {
            onClick={() => { setActiveTab('quiz'); setIsAdding(false); }}
            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition ${activeTab === 'quiz' ? 'bg-primary text-white' : 'glass-panel text-gray-400 hover:text-white'}`}
          >
-            <HelpCircle size={18} /> Quiz Questions
+            <CircleHelp size={18} /> Quiz Questions
          </button>
       </div>
 

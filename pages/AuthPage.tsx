@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppRoutes } from '../types';
 import { authService } from '../services/authService';
-import { Mail, Lock, User, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Mail, Lock, User, ArrowLeft, CircleCheck } from 'lucide-react';
 
 const AuthPage: React.FC<{ type: 'login' | 'signup' | 'forgot-password' }> = ({ type }) => {
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ const AuthPage: React.FC<{ type: 'login' | 'signup' | 'forgot-password' }> = ({ 
       <div className="min-h-screen pt-20 flex items-center justify-center px-4">
         <div className="glass-panel p-8 rounded-3xl w-full max-w-md border border-white/10 text-center animate-fade-in-up">
            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 text-green-400">
-              <CheckCircle size={32} />
+              <CircleCheck size={32} />
            </div>
            <h2 className="text-2xl font-bold text-white mb-2">Check Your Email</h2>
            <p className="text-gray-400 mb-8">We have sent a password reset link to <span className="text-white font-medium">{email}</span>.</p>

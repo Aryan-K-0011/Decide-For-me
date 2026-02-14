@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Compass, PieChart, ArrowRight, Camera, Shirt, Plane, Utensils, ShoppingBag, Layers, Sparkles } from 'lucide-react';
+import { MessageCircle, Compass, ChartPie, ArrowRight, Camera, Shirt, Plane, Utensils, ShoppingBag, Layers, Sparkles } from 'lucide-react';
 import { AppRoutes } from '../types';
 import { storageService } from '../services/storageService';
 
@@ -132,7 +132,7 @@ const Home: React.FC = () => {
               color: "bg-pink-500"
             },
             { 
-              icon: <PieChart className="w-8 h-8 text-white" />, 
+              icon: <ChartPie className="w-8 h-8 text-white" />, 
               title: "Compare & Graph", 
               desc: "Can't pick between two? See the logical breakdown.",
               link: AppRoutes.COMPARE,

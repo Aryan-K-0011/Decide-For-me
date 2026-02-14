@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { Search, Trash2, Ban, CheckCircle } from 'lucide-react';
+import { Search, Trash2, Ban, CircleCheck } from 'lucide-react';
 import { storageService } from '../../services/storageService';
 
 const UserManagementPage: React.FC = () => {
@@ -94,7 +94,7 @@ const UserManagementPage: React.FC = () => {
                                   }`} 
                                   title={user.status === 'Active' ? "Ban User" : "Activate User"}
                                 >
-                                    {user.status === 'Active' ? <Ban size={16} /> : <CheckCircle size={16} />}
+                                    {user.status === 'Active' ? <Ban size={16} /> : <CircleCheck size={16} />}
                                 </button>
                                 <button 
                                   onClick={() => handleDelete(user.id)}

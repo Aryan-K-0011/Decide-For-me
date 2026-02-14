@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Camera, BarChart2, CheckCircle, ArrowRight } from 'lucide-react';
+import { MessageCircle, Camera, ChartBar, CircleCheck, ArrowRight } from 'lucide-react';
 import { AppRoutes } from '../types';
 
 const HowItWorksPage: React.FC = () => {
@@ -25,7 +25,7 @@ const HowItWorksPage: React.FC = () => {
       num: "03",
       title: "Compare & Decide",
       desc: "Confused between two? Use the Comparison Graph to see the logical winner.",
-      icon: <BarChart2 size={28} className="text-blue-400" />,
+      icon: <ChartBar size={28} className="text-blue-400" />,
       link: AppRoutes.COMPARE,
       linkText: "Compare Now"
     },
@@ -33,7 +33,7 @@ const HowItWorksPage: React.FC = () => {
       num: "04",
       title: "Save Your Choice",
       desc: "Save the best recommendations to your profile for future reference.",
-      icon: <CheckCircle size={28} className="text-green-400" />,
+      icon: <CircleCheck size={28} className="text-green-400" />,
       link: AppRoutes.LOGIN,
       linkText: "Create Profile"
     }

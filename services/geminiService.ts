@@ -2,7 +2,8 @@ import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { ChatMessage } from "../types";
 
 // Initialize the client. API_KEY is injected by the environment.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Fallback to empty string to prevent crash during initialization if key is missing.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 export const generateDecisionResponse = async (
   currentMessage: string,
@@ -10,6 +11,10 @@ export const generateDecisionResponse = async (
   imageBase64?: string
 ): Promise<string> => {
   try {
+    if (!process.env.API_KEY) {
+        return "System Error: API Key is missing. Please contact the administrator.";
+    }
+
     // Select model based on presence of image
     // gemini-3-flash-preview supports both text and image input.
     const modelName = 'gemini-3-flash-preview';
@@ -74,6 +79,8 @@ export const generateDecisionResponse = async (
 
 export const generateComparisonData = async (topicA: string, topicB: string): Promise<any> => {
     try {
+        if (!process.env.API_KEY) return null;
+
         const prompt = `Compare "${topicA}" and "${topicB}" for a user deciding between them. 
         Return ONLY a JSON object with this structure:
         {
