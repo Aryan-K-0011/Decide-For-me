@@ -7,9 +7,6 @@ let aiInstance: GoogleGenAI | null = null;
 
 const getAiClient = (): GoogleGenAI => {
     if (!aiInstance) {
-        // Guideline: Use process.env.API_KEY directly.
-        // If it's missing, we let it throw or handle it gracefully here, 
-        // rather than at the top level of the module.
         const apiKey = process.env.API_KEY;
         if (!apiKey) {
              throw new Error("API Key is missing. Please check your environment variables.");
@@ -22,26 +19,39 @@ const getAiClient = (): GoogleGenAI => {
 export const generateDecisionResponse = async (
   currentMessage: string,
   history: ChatMessage[],
-  imageBase64?: string
+  imageBase64?: string,
+  category: string = 'General'
 ): Promise<string> => {
   try {
     const ai = getAiClient();
-
-    // Select model based on task
-    // gemini-3-flash-preview supports both text and image input.
     const modelName = 'gemini-3-flash-preview';
 
-    // Construct the prompt context from history (simplified for single-turn formatted request or short history)
-    const systemPrompt = `You are DecideForMe, a trendy, Gen Z-friendly AI decision assistant. 
-    Tone: Fun, concise, premium, helpful, and objective. 
-    Goal: Help the user make a decision about outfits, food, travel, or shopping.
-    Format: Use emojis. Be direct. If comparing, give pros/cons.`;
+    // Retrieve User Context
+    const userJson = localStorage.getItem('dfm_user');
+    const user = userJson ? JSON.parse(userJson) : {};
+    const vibe = localStorage.getItem('user_vibe') || 'Unspecified';
+    const prefs = user.preferences || {};
 
-    // Add history context (limited to last 5 turns to save context window and complexity)
+    const systemPrompt = `You are DecideForMe, a trendy, Gen Z-friendly AI decision assistant. 
+    
+    USER PROFILE:
+    - Name: ${user.name || 'Friend'}
+    - Personality Vibe: ${vibe} (Adjust your tone to match this vibe)
+    - Style Pref: ${prefs.style || 'Casual'}
+    - Budget: ${prefs.budget || 'Medium'}
+    - Food Pref: ${prefs.food || 'Any'}
+    
+    CURRENT CATEGORY: ${category}
+
+    Tone: Fun, concise, premium, helpful, and objective. Use emojis.
+    Goal: Help the user make a decision. If they have a "Vibe" defined, prioritize suggestions that fit that vibe.
+    Format: Be direct. If comparing, give pros/cons.`;
+
+    // Add history context (limited to last 5 turns)
     const recentHistory = history.slice(-5);
     let contextStr = recentHistory.map(m => `${m.role === 'user' ? 'User' : 'AI'}: ${m.text}`).join('\n');
 
-    const finalPrompt = `${systemPrompt}\n\nContext:\n${contextStr}\n\nUser Question: ${currentMessage}`;
+    const finalPrompt = `${systemPrompt}\n\nChat History:\n${contextStr}\n\nUser Question: ${currentMessage}`;
 
     if (imageBase64) {
         let mimeType = 'image/jpeg';
@@ -55,7 +65,6 @@ export const generateDecisionResponse = async (
             }
         }
 
-        // Multimodal request
         const response: GenerateContentResponse = await ai.models.generateContent({
             model: modelName,
             contents: {
@@ -82,7 +91,6 @@ export const generateDecisionResponse = async (
 
   } catch (error: any) {
     console.error("Gemini API Error:", error);
-    // Return a friendly error message to the chat instead of crashing
     if (error.message.includes("API Key is missing")) {
         return "System Error: API Key configuration is missing.";
     }

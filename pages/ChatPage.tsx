@@ -1,24 +1,44 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Image as ImageIcon, Loader2, X } from 'lucide-react';
+import { Send, Image as ImageIcon, Loader2, X, ChevronDown } from 'lucide-react';
 import { generateDecisionResponse } from '../services/geminiService';
 import { ChatMessage } from '../types';
 import { storageService } from '../services/storageService';
 import { userService } from '../services/userService';
+import { useSearchParams } from 'react-router-dom';
 
 const ChatPage: React.FC = () => {
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'welcome',
-      role: 'model',
-      text: "Hey! I'm your AI decision assistant. Need help with an outfit, dinner plans, or a trip? Send a pic or just ask away! ✨",
-      timestamp: Date.now()
-    }
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState('General');
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [searchParams] = useSearchParams();
+  const chatId = searchParams.get('id');
+
+  const categories = ['General', 'Outfit', 'Food', 'Travel', 'Shopping'];
+
+  useEffect(() => {
+      // Load specific chat session if ID provided
+      if (chatId) {
+          const session = storageService.getChatSessionById(chatId);
+          if (session) {
+              setMessages(session.messages);
+              // Try to infer category from stored topic or default
+              return;
+          }
+      }
+
+      // Default welcome
+      setMessages([{
+          id: 'welcome',
+          role: 'model',
+          text: "Hey! I'm your AI decision assistant. Need help with an outfit, dinner plans, or a trip? Select a category or just ask away! ✨",
+          timestamp: Date.now()
+      }]);
+  }, [chatId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,20 +64,14 @@ const ChatPage: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const detectCategory = (text: string) => {
-    const t = text.toLowerCase();
-    if (t.includes('wear') || t.includes('dress') || t.includes('outfit')) return 'Outfit';
-    if (t.includes('eat') || t.includes('food') || t.includes('restaurant')) return 'Food';
-    if (t.includes('travel') || t.includes('trip') || t.includes('visit')) return 'Travel';
-    return 'General';
-  };
-
   const handleSend = async () => {
     if ((!input.trim() && !selectedImage) || isLoading) return;
 
     const user = userService.getUser();
     const currentInput = input;
-    const cat = detectCategory(currentInput);
+    
+    // Use manually selected category
+    const cat = selectedCategory;
 
     const newUserMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -67,17 +81,18 @@ const ChatPage: React.FC = () => {
       timestamp: Date.now()
     };
 
-    setMessages(prev => [...prev, newUserMessage]);
+    const updatedMessages = [...messages, newUserMessage];
+    setMessages(updatedMessages);
     setInput('');
     setIsLoading(true);
     
-    // Keep reference to image for the API call, then clear it from UI state for next message
     const imageToSend = selectedImage; 
     setSelectedImage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
 
     try {
-      const responseText = await generateDecisionResponse(newUserMessage.text, messages, imageToSend || undefined);
+      // Pass category to AI
+      const responseText = await generateDecisionResponse(newUserMessage.text, messages, imageToSend || undefined, cat);
       
       const newBotMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -85,7 +100,18 @@ const ChatPage: React.FC = () => {
         text: responseText,
         timestamp: Date.now()
       };
-      setMessages(prev => [...prev, newBotMessage]);
+      
+      const finalMessages = [...updatedMessages, newBotMessage];
+      setMessages(finalMessages);
+
+      // Save Session
+      storageService.saveChatSession({
+          id: chatId || Date.now().toString(),
+          username: user.username,
+          topic: currentInput.substring(0, 30) + (currentInput.length > 30 ? '...' : ''),
+          time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+          messages: finalMessages
+      });
 
       // SYNC: Log activity for Admin
       storageService.addLog(user.username, cat, currentInput, 'Success');
@@ -100,10 +126,26 @@ const ChatPage: React.FC = () => {
 
   return (
     <div className="pt-20 pb-4 h-screen flex flex-col max-w-4xl mx-auto px-4">
-      {/* Header */}
-      <div className="mb-4 text-center">
-        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">AI Decision Chat</h2>
-        <p className="text-gray-400 text-sm">Ask about Fashion, Food, Travel & Shopping</p>
+      {/* Header & Category Select */}
+      <div className="mb-2 text-center">
+        <h2 className="text-xl font-bold text-white mb-2">Decision Chat</h2>
+        
+        {/* Category Selector */}
+        <div className="flex justify-center gap-2 flex-wrap mb-2">
+           {categories.map(c => (
+               <button
+                  key={c}
+                  onClick={() => setSelectedCategory(c)}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition border ${
+                      selectedCategory === c 
+                      ? 'bg-primary border-primary text-white' 
+                      : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                  }`}
+               >
+                   {c}
+               </button>
+           ))}
+        </div>
       </div>
 
       {/* Messages Area */}
@@ -162,7 +204,7 @@ const ChatPage: React.FC = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Type your question..."
+            placeholder={`Ask about ${selectedCategory}...`}
             className="flex-1 bg-transparent border-none focus:ring-0 text-white placeholder-gray-500"
           />
           <button 

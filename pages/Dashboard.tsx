@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SavedDecision, User, AppRoutes, QuizResult } from '../types';
 import { Bookmark, User as UserIcon, Settings, Clock, ArrowRight, Trash2, MessageCircle, Compass, Sparkles, ChartPie, Star } from 'lucide-react';
 import { userService } from '../services/userService';
+import { storageService } from '../services/storageService';
 import { Link } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
@@ -9,18 +10,14 @@ const Dashboard: React.FC = () => {
   const [savedItems, setSavedItems] = useState<SavedDecision[]>([]);
   const [spinHistory, setSpinHistory] = useState<{ result: string, date: string }[]>([]);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
-
-  // Mock recent chats (In a real app, fetch from DB)
-  const recentChats = [
-    { id: 1, topic: 'Outfit for Wedding', time: '2 hrs ago' },
-    { id: 2, topic: 'Dinner suggestions', time: '1 day ago' },
-  ];
+  const [recentChats, setRecentChats] = useState<any[]>([]);
 
   useEffect(() => {
     // Load initial data
     setUser(userService.getUser());
     setSavedItems(userService.getSavedDecisions().slice(0, 4));
     setSpinHistory(userService.getSpinHistory());
+    setRecentChats(storageService.getChatSessions(userService.getUser().username).slice(0, 3));
     
     const storedQuiz = localStorage.getItem('quizResult');
     if (storedQuiz) setQuizResult(JSON.parse(storedQuiz));
@@ -31,13 +28,19 @@ const Dashboard: React.FC = () => {
         setSpinHistory(userService.getSpinHistory());
         setUser(userService.getUser());
     };
+
+    const handleChatSync = () => {
+        setRecentChats(storageService.getChatSessions(userService.getUser().username).slice(0, 3));
+    };
     
     window.addEventListener('dataChange', handleDataChange);
     window.addEventListener('userChange', handleDataChange);
+    window.addEventListener('sync-chats', handleChatSync);
     
     return () => {
         window.removeEventListener('dataChange', handleDataChange);
         window.removeEventListener('userChange', handleDataChange);
+        window.removeEventListener('sync-chats', handleChatSync);
     };
   }, []);
 
@@ -183,19 +186,21 @@ const Dashboard: React.FC = () => {
                </div>
             </div>
 
-            {/* Recent Chats (Mock) */}
+            {/* Recent Chats */}
             <div className="glass-panel p-6 rounded-3xl">
                 <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                     <MessageCircle className="text-blue-400" size={18} /> Recent Chats
                 </h3>
                 <div className="space-y-4">
-                    {recentChats.map(chat => (
+                    {recentChats.length === 0 ? (
+                        <p className="text-xs text-gray-500">No chat history yet.</p>
+                    ) : recentChats.map(chat => (
                         <div key={chat.id} className="flex items-center justify-between pb-3 border-b border-gray-700 last:border-0 last:pb-0">
                             <div>
-                                <p className="text-sm font-bold text-white">{chat.topic}</p>
+                                <p className="text-sm font-bold text-white truncate max-w-[150px]">{chat.topic}</p>
                                 <p className="text-xs text-gray-500">{chat.time}</p>
                             </div>
-                            <Link to={AppRoutes.CHAT} className="p-2 bg-white/5 rounded-lg hover:bg-white/10 text-gray-300">
+                            <Link to={`${AppRoutes.CHAT}?id=${chat.id}`} className="p-2 bg-white/5 rounded-lg hover:bg-white/10 text-gray-300">
                                 <ArrowRight size={14} />
                             </Link>
                         </div>

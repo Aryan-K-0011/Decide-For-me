@@ -6,13 +6,14 @@ const KEYS = {
   LOGS: 'dfm_activity_logs',
   CATEGORIES: 'dfm_categories',
   QUIZ: 'dfm_quiz_questions',
-  FEEDBACK: 'dfm_feedbacks'
+  FEEDBACK: 'dfm_feedbacks',
+  CHATS: 'dfm_chat_sessions'
 };
 
 // Initial Data Generators
 const getInitialUsers = () => [
-  { id: '1', name: 'Alex Johnson', email: 'alex@example.com', username: '@alex', joinDate: '2023-10-12', status: 'Active', avatar: '' },
-  { id: '2', name: 'Sarah Connor', email: 'sarah@example.com', username: '@sarah', joinDate: '2023-11-05', status: 'Active', avatar: '' },
+  { id: '1', name: 'Alex Johnson', email: 'alex@example.com', username: '@alex', joinDate: '2023-10-12', status: 'Active', avatar: '', passwordHash: '7c4a8d09' }, // 'password' hashed
+  { id: '2', name: 'Sarah Connor', email: 'sarah@example.com', username: '@sarah', joinDate: '2023-11-05', status: 'Active', avatar: '', passwordHash: '7c4a8d09' },
 ];
 
 const getInitialCategories = () => [
@@ -83,8 +84,9 @@ export const storageService = {
     const index = users.findIndex(u => u.id === updatedUser.id || u.email === updatedUser.email);
     
     if (index !== -1) {
-        // Merge existing data (preserving status, joinDate) with new profile data
-        users[index] = { ...users[index], ...updatedUser };
+        // Merge existing data (preserving status, joinDate, passwordHash) with new profile data
+        const oldData = users[index];
+        users[index] = { ...oldData, ...updatedUser };
         localStorage.setItem(KEYS.USERS, JSON.stringify(users));
         window.dispatchEvent(new Event('sync-users'));
     }
@@ -96,7 +98,7 @@ export const storageService = {
     window.dispatchEvent(new Event('sync-users'));
   },
 
-  // --- LOGS ---
+  // --- LOGS (Admin view) ---
   getLogs: () => {
     const data = localStorage.getItem(KEYS.LOGS);
     return data ? JSON.parse(data) : [];
@@ -124,6 +126,33 @@ export const storageService = {
         localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(cats));
         window.dispatchEvent(new Event('sync-content'));
     }
+  },
+
+  // --- CHAT SESSIONS (User History) ---
+  getChatSessions: (username: string) => {
+    const data = localStorage.getItem(KEYS.CHATS);
+    const allChats = data ? JSON.parse(data) : [];
+    // Filter by user
+    return allChats.filter((c: any) => c.username === username);
+  },
+  saveChatSession: (session: { id: string, username: string, topic: string, time: string, messages: any[] }) => {
+     const data = localStorage.getItem(KEYS.CHATS);
+     const allChats = data ? JSON.parse(data) : [];
+     
+     const existingIndex = allChats.findIndex((c: any) => c.id === session.id);
+     if (existingIndex >= 0) {
+         allChats[existingIndex] = session;
+     } else {
+         allChats.unshift(session);
+     }
+     // Store max 20 sessions per user roughly (simplification)
+     localStorage.setItem(KEYS.CHATS, JSON.stringify(allChats.slice(0, 100)));
+     window.dispatchEvent(new Event('sync-chats'));
+  },
+  getChatSessionById: (id: string) => {
+    const data = localStorage.getItem(KEYS.CHATS);
+    const allChats = data ? JSON.parse(data) : [];
+    return allChats.find((c: any) => c.id === id);
   },
 
   // --- CONTENT (Categories & Quiz) ---

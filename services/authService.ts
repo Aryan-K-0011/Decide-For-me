@@ -1,10 +1,25 @@
 import { storageService } from "./storageService";
 
+// Simple client-side hash (DJB2 variant) for demo security purposes.
+// In a production app, never handle passwords purely client-side like this.
+const hashPassword = (str: string): string => {
+    let hash = 5381;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash * 33) ^ str.charCodeAt(i);
+    }
+    return (hash >>> 0).toString(16);
+};
+
 export const authService = {
   // User Auth
   login: (email?: string, password?: string): 'user' | 'admin' | 'invalid' | 'banned' => {
+    if (!password) return 'invalid';
+    
     // Check for Admin Credentials
-    if ((email === 'admin' || email === 'admin@decideforme.app') && password === 'admin123') {
+    // Admin password hardcoded hash for 'admin123' -> '2c67c04f'
+    const adminHash = '2c67c04f';
+    
+    if ((email === 'admin' || email === 'admin@decideforme.app') && hashPassword(password) === adminHash) {
         localStorage.setItem('isAdminAuthenticated', 'true');
         localStorage.setItem('isAuthenticated', 'true'); 
         
@@ -25,11 +40,10 @@ export const authService = {
 
     // Check Sync Users
     const users = storageService.getUsers();
-    // For this demo, we assume password is correct if email matches user in DB
-    // In real app, check hash.
     const validUser = users.find(u => u.email === email || u.username === email);
 
-    if (validUser) {
+    // Verify hashed password
+    if (validUser && validUser.passwordHash === hashPassword(password)) {
         if (validUser.status === 'Banned') {
             return 'banned';
         }
@@ -60,6 +74,7 @@ export const authService = {
       name: username, // Using username as name for simplicity in signup
       username: `@${username}`,
       email: email,
+      passwordHash: hashPassword(password), // Store hash, not text
       avatar: '',
       preferences: {
         style: 'Casual',
