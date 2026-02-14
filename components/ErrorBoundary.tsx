@@ -10,7 +10,8 @@ interface State {
   error: Error | null;
 }
 
-class ErrorBoundary extends React.Component<Props, State> {
+// Fix: Use Component explicitly and ensure generic types are passed correctly
+class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
     error: null,
